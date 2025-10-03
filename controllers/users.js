@@ -14,9 +14,17 @@ async function handleUsersProfile(req, res) {
 }
 
 async function handleGetUserById(req, res) {
-    const userDetails = await User.findById(req.params.userId);
-    if (!userDetails) return res.status(400).json({ error: "User not found" });
-    return res.json(userDetails);
+    let auth = req.headers.authorization;
+     let userId = req.userId
+
+    console.log("userId", userId)
+
+    const userDetails = await User.findById(userId);
+    // const userDetails = await User.findById(userId);
+
+    if (!userDetails) return res.status(400).json({ error: "User not found." });
+
+    return res.json({userDetails,token:auth});
 }
 
 async function handleDeleteUserById(req, res) {
@@ -58,7 +66,7 @@ async function handleLogInUser(req, res) {
     if (!user) {
         return res.status(401).json({ msg: "Invalid Credentials!. Please enter correct email and password." });
     }
-    const payload = { userId: email };
+    const payload = { userId: user._id};
     const secretKey = process.env.jwt_secret_key;
     const token = jwt.sign(payload, secretKey, { expiresIn: '1h' }); // Token expires in 1 hour
 
