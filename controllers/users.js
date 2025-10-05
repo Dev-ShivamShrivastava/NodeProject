@@ -1,4 +1,5 @@
 const User = require("../models/users");
+const ServiceRequest = require("../models/ServiceRequest");
 const jwt = require('jsonwebtoken');
 const bcrypt = require("bcrypt");
 
@@ -103,7 +104,7 @@ async function handleLogInUser(req, res) {
     // 4️⃣ Create JWT token
     const payload = { userId: user._id };
     const secretKey = process.env.jwt_secret_key;
-    const token = jwt.sign(payload, secretKey, { expiresIn: "1h" }); // token expires in 1 hour
+    const token = jwt.sign(payload, secretKey, { expiresIn: "365d" }); // token expires in 1 hour
 
     // 5️⃣ Return success response
     return res.status(200).json({
@@ -123,11 +124,39 @@ async function handleLogInUser(req, res) {
     return res.status(500).json({ status: "Failure", message: "Server error" });
   }
 }
+
+
+async function handleCreateServiceRequest(req, res) {
+  try {
+    const { name, phoneNo, service, message } = req.body;
+
+    // userId is attached by auth middleware
+    const userId = req.userId;
+
+    const request = await ServiceRequest.create({
+      userId,
+      name,
+      phoneNo,
+      service,
+      message
+    });
+
+    return res.status(201).json({
+      status: "Success",
+      message: "Service request created successfully",
+      data: request
+    });
+  } catch (err) {
+    console.error("Service request error:", err);
+    return res.status(500).json({ message: "Server error" });
+  }
+}
 module.exports = {
   handleGetAllUsers,
   handleGetUserById,
   handleDeleteUserById,
   handleCreateUser,
   handleLogInUser,
-  handleUsersProfile
+  handleUsersProfile,
+  handleCreateServiceRequest
 }
