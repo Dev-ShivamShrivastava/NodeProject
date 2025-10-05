@@ -10,6 +10,11 @@ const serviceRequestSchema = new mongoose.Schema({
   phoneNo: String,
   service: String,
   message: String,
+  status: {
+    type: String,
+    enum: ["Pending", "Completed"],
+    default: "Pending"
+  },
   createdAt: {
     type: Date,
     default: Date.now

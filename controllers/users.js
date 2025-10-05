@@ -138,7 +138,8 @@ async function handleCreateServiceRequest(req, res) {
       name,
       phoneNo,
       service,
-      message
+      message,
+      status: "Pending"
     });
 
     return res.status(201).json({
@@ -151,6 +152,86 @@ async function handleCreateServiceRequest(req, res) {
     return res.status(500).json({ message: "Server error" });
   }
 }
+
+async function handleGetServiceList(req, res) {
+  try {
+    // Example data (you can later fetch it from DB if needed)
+    const serviceList = [
+      "AC Repair",
+      "Plumbing",
+      "Electrician",
+      "House Cleaning",
+      "Painting",
+      "Carpentry"
+    ];
+
+    const whatsappNo = "919876543210";
+    const mobileNo = "9123456789";
+
+    // Send response
+    return res.status(200).json({
+      status: "Success",
+      message: "Service list fetched successfully",
+      data: {
+        whatsappNo,
+        mobileNo,
+        services: serviceList
+      }
+    });
+  } catch (err) {
+    console.error("Error fetching service list:", err);
+    return res.status(500).json({
+      status: "Failure",
+      message: "Server error while fetching service list"
+    });
+  }
+}
+
+async function handleGetRequestsByStatus(req, res) {
+  try {
+    const userId = req.userId;
+    const status = req.query.status || "Pending"; // default to Pending
+
+    const requests = await ServiceRequest.find({ userId, status });
+
+    return res.status(200).json({
+      status: "Success",
+      message: `${status} requests fetched successfully`,
+      data: requests
+    });
+  } catch (err) {
+    console.error("Error fetching requests:", err);
+    return res.status(500).json({ status: "Failure", message: "Server error" });
+  }
+}
+
+async function handleUpdateServiceStatus(req, res) {
+  try {
+    const { id } = req.params; // request ID
+    const { status } = req.body; // "Pending" or "Completed"
+
+    const updatedRequest = await ServiceRequest.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true }
+    );
+
+    if (!updatedRequest) {
+      return res.status(404).json({ message: "Request not found" });
+    }
+
+    return res.status(200).json({
+      status: "Success",
+      message: "Service status updated successfully",
+      data: updatedRequest
+    });
+  } catch (err) {
+    console.error("Error updating service status:", err);
+    return res.status(500).json({ status: "Failure", message: "Server error" });
+  }
+}
+
+
 module.exports = {
   handleGetAllUsers,
   handleGetUserById,
@@ -158,5 +239,8 @@ module.exports = {
   handleCreateUser,
   handleLogInUser,
   handleUsersProfile,
-  handleCreateServiceRequest
+  handleCreateServiceRequest,
+  handleGetServiceList,
+  handleGetRequestsByStatus,
+  handleUpdateServiceStatus
 }
